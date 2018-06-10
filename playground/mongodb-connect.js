@@ -25,13 +25,13 @@ MongoClient.connect('mongodb://localhost:27017/TodoApp', (err, db) => {
 //se for V3 do mongo:
 //const db = client.db('TodoApp');
     // db.collection('Todos').insertOne({
-    //     text: 'Algo a fazer',
+    //     text: 'algo a fazer',
     //     completed:false
     // }, (err, result) => {
     //     if (err) {
     //         return console.log('Nao foi possivel inserir o registro na colecao Todos')
     //     }
-
+    // });
     // db.collection('Users').insertOne({
     //     name: 'Giovani',
     //     age:99,
