@@ -29,6 +29,25 @@ app.post('/todos', (req, res) => {
   });
 });
 
+app.delete('/todos/:id', (req, res) => {
+    var id = req.params.id;
+    if (! ObjectID.isValid(id)) {
+      return res.status(404).send('Id invalido.');
+    }
+    Todo.findByIdAndRemove(id).then((todo) => {
+        if (todo) {
+            return res.status(200).send({todo});
+        }
+        else {
+            return res.status(404).send(`Nenhum to-do encontrado com id ${id} para delecao`);
+        }
+    }, (e) => {
+        return res.status(404).send('Erro ao buscar to-do para delecao');
+    }).catch((e) => {
+        res.status(400).send();
+    }) ;
+});
+
 app.get('/todos', (req, res) => {
     Todo.find().then((todos) => {
         res.send({todos});
