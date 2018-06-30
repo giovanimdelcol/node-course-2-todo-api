@@ -53,6 +53,19 @@ UserSchema.methods.generateAuthToken = function () {
   });
 };
 
+UserSchema.methods.removeToken = function (token) {
+  //$pull operador do mongoDB que permite retirarmos itens de um vetor que atenda a determinado criterio
+  var user = this;
+  //abaixo sera retirado do vetor tokens qualquer items cujo token coincidir com o recebido por esta funcao
+  return user.update({
+    $pull:{
+      tokens:{
+        token: token
+      }  
+    }
+  });
+};
+
 //tudo que adicionamos ao .statics vira metodo de classe
 UserSchema.statics.findByToken = function (token) {
   var User = this; //o this aqui eh a classe (o model)
