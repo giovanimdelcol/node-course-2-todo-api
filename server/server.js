@@ -16,10 +16,11 @@ const port = process.env.PORT;
 
 app.use(bodyParser.json());
 
-app.post('/todos', (req, res) => {
+app.post('/todos', authenticate, (req, res) => {
   var todo = new Todo(
       {
-          text: req.body.text
+          text: req.body.text,
+          _creator: req.user._id
       }
   );
 
@@ -33,12 +34,17 @@ app.post('/todos', (req, res) => {
   });
 });
 
-app.delete('/todos/:id', (req, res) => {
+app.delete('/todos/:id', authenticate, (req, res) => {
     var id = req.params.id;
     if (! ObjectID.isValid(id)) {
       return res.status(404).send('Id invalido.');
     }
-    Todo.findByIdAndRemove(id).then((todo) => {
+    Todo.findOneAndRemove(
+        {
+            _id: id,
+            _creator: req.user._id
+        })
+        .then((todo) => {
         if (todo) {
             return res.status(200).send({todo});
         }
@@ -52,15 +58,17 @@ app.delete('/todos/:id', (req, res) => {
     }) ;
 });
 
-app.get('/todos', (req, res) => {
-    Todo.find().then((todos) => {
+app.get('/todos', authenticate, (req, res) => {
+    Todo.find({
+        _creator: req.user._id
+    }).then((todos) => {
         res.send({todos});
     }, (e) => {
         res.status(400).send(e);
     })
 });
 
-app.get('/todos/:id', (req, res) => {
+app.get('/todos/:id', authenticate, (req, res) => {
     //req possui uma serie de chave-valor onde chave eh o nome do parametro
     //e o valor eh o valor atribuido a ele pela chamada
     //res.send(req.params);
@@ -68,7 +76,12 @@ app.get('/todos/:id', (req, res) => {
     if (! ObjectID.isValid(id)) {
       return res.status(404).send('Id invalido.');
     }
-    Todo.findById(id).then((todo) => {
+    Todo.findOne(
+        {
+            _id: id,
+            _creator: req.user._id
+        })
+        .then((todo) => {
         if (todo) {
             return res.status(200).send({todo});
         }
@@ -83,7 +96,7 @@ app.get('/todos/:id', (req, res) => {
     
 });
 
-app.patch('/todos/:id', (req, res) => {
+app.patch('/todos/:id', authenticate, (req, res) => {
     var id = req.params.id;
     var body = _.pick(req.body, ['text', 'completed']);
     //A LINHA ACIMA OBTEM DO OBJETO ENVIADO PELO USUARIO
@@ -101,7 +114,7 @@ app.patch('/todos/:id', (req, res) => {
         body.completedAt = null;
     }
 
-    Todo.findByIdAndUpdate(id, {$set: body}, {new: true}).then((todo) => {
+    Todo.findOneAndUpdate({_id: id, _creator: req.user._id}, {$set: body}, {new: true}).then((todo) => {
         if (!todo) {
             return res.status(404).send('Id nao encontrado para update');
         }
